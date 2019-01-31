@@ -1,10 +1,10 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db import connection
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save, post_delete
 from django.dispatch.dispatcher import receiver
 
-from comments.models import Comment, Subscribe, DELETED, CREATED, UPDATED
+from comments.models import Comment, DELETED, CREATED, UPDATED
 from comments.serializers.comment import CommentSerializer
 from comments.sql import SUBSCRIBERS_SQL
 
@@ -27,20 +27,22 @@ def send_push(user_id, operation, data):
 
 
 @receiver(post_save, sender=Comment)
-@receiver(pre_delete, sender=Comment)
+@receiver(post_delete, sender=Comment)
 def comment_instance_modified(sender, instance, created=None, **kwargs):
     """ Actons after comment created, updated or deleted """
     operation = CREATED
-
+    data = CommentSerializer(instance).data
     # comment deleted
     if created is None:
         operation = DELETED
+        for user_id in instance.subscribed_users:
+            send_push(user_id, operation, data)
+        return
 
     # comment updated
     if created is False:
         operation = UPDATED
 
-    data = CommentSerializer(instance).data
     with connection.cursor() as cursor:
         cursor.execute(SUBSCRIBERS_SQL, dict(id=instance.id))
         for row, in cursor:

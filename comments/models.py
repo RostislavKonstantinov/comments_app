@@ -1,19 +1,17 @@
+import operator
 from datetime import datetime
 from functools import reduce
 
-import operator
-
 import pytz
-
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import JSONField
-from django.db import models
-
+from django.db import models, connection
 from mptt.models import MPTTModel, TreeForeignKey
 
 from comments.mixins import ContentTypeMixin
+from comments.sql import SUBSCRIBERS_SQL
 
 CONTENT_TYPE_CHOICES = reduce(
     operator.or_,
@@ -40,6 +38,18 @@ class Comment(ContentTypeMixin, MPTTModel):
 
     class Meta:
         index_together = ('content_type', 'object_id')
+
+    def delete(self, *args, **kwargs):
+        self._subscribed_users = []
+        with connection.cursor() as cursor:
+            cursor.execute(SUBSCRIBERS_SQL, dict(id=self.id))
+            for row, in cursor:
+                self._subscribed_users.append(row['user_id'])
+        return super().delete(*args, **kwargs)
+
+    @property
+    def subscribed_users(self):
+        return getattr(self, '_subscribed_users', None)
 
 
 CREATED = 'created'

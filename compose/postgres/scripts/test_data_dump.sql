@@ -20898,14 +20898,14 @@ SELECT pg_catalog.setval('public.comments_commentsreport_id_seq', 1, false);
 --
 
 COPY public.comments_subscribe (id, object_id, content_type_id, user_id) FROM stdin;
+1	1	11	1
 \.
-
 
 --
 -- Name: comments_subscribe_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.comments_subscribe_id_seq', 1, false);
+SELECT pg_catalog.setval('public.comments_subscribe_id_seq', 1, true);
 
 
 --
