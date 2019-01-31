@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Pushes test</title>
+</head>
+<body>
+    <div id="push-log"></div>
+</body>
+<script>
+    var pushSocket = new WebSocket('ws://localhost:8000/ws/push/1/');
+
+    pushSocket.onmessage = function(e) {
+        var data = JSON.parse(e.data);
+        var message = e.data;
+        document.querySelector('#push-log').append(message);
+        document.querySelector('#push-log').appendChild(document.createElement("br"));
+    };
+
+    pushSocket.onclose = function(e) {
+        console.error('Socket closed unexpectedly');
+    };
+</script>
+</html>

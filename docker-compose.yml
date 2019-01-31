@@ -1,0 +1,45 @@
+version: '3.2'
+services:
+
+  postgres:
+    container_name: comments-postgres
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./compose/postgres/Dockerfile
+    env_file: compose/postgres/postgres.env
+    volumes:
+      - postgre_data:/var/lib/postgresql/data
+    ports:
+     - 5432:5432/tcp
+
+  redis:
+    image: redis:latest
+    container_name: comments-redis
+    ports:
+      - 6379:6379/tcp
+    restart: always
+
+  api:
+    container_name: comments-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./compose/api/Dockerfile
+    env_file: ./compose/api/envs/api.env
+    environment:
+      - ENV_FILE= # block overriding docker-compose envs load priority by api.sh
+    command: ['api.sh']
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - 8000:8000/tcp
+    volumes:
+      - ./compose/api/envs:/envs
+      - .:/code
+
+
+volumes:
+  postgre_data:
+
