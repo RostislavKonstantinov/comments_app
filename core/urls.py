@@ -14,10 +14,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from rest_framework.schemas import get_schema_view
+
 from status import views as status_views
 
 urlpatterns = [
     url(r'^health$', status_views.HealthView.as_view(), name='health'),
     url(r'^content', include('content_entities.urls'), name='content'),
     url(r'^comments', include('comments.urls'), name='comments'),
+    url(r'^schema$', get_schema_view(title='API', urlconf='core.urls')),
 ]

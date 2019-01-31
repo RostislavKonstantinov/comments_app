@@ -6,7 +6,7 @@ from comments.views.history import CommentHistoryViewSet
 from comments.views.subscribes import SubscribesViewSet
 
 urlpatterns = [
-    url(r'^$', CommentsViewSet.as_view({'get': 'list', 'post': 'create'})),
+    url(r'^$', CommentsViewSet.as_view({'get': 'list', 'post': 'create'}),  name='comments-list'),
     url(r'^/(?P<pk>\d+)$', CommentsViewSet.as_view({'get': 'retrieve',
                                                     'put': 'update',
                                                     'delete': 'destroy',
